@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Selection */
+::selection {
+  background: rgba(139, 92, 246, 0.3);
+  color: white;
+}
+
+/* Remove number input spinners */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Smooth transitions */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animate in utilities */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-in-from-bottom-4 {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes slide-in-from-right-4 {
+  from { transform: translateX(16px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.slide-in-from-bottom-4 {
+  animation-name: slide-in-from-bottom-4;
+}
+
+.slide-in-from-right-4 {
+  animation-name: slide-in-from-right-4;
+}
+
+.duration-200 {
+  animation-duration: 200ms;
+}
+
+.duration-250 {
+  animation-duration: 250ms;
+}
+
+.duration-500 {
+  animation-duration: 500ms;
+}
+
+/* Timer glow on critical */
+.timer-glow-red {
+  filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.7));
+}
+
+/* Exam mode body — disable user-select */
+.exam-mode {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Number mono */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
