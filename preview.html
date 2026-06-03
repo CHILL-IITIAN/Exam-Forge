@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ExamForge — Phase 1 Preview</title>
+<style>
+  /* ---------- DESIGN TOKENS (single source of truth) ---------- */
+  :root{
+    --bg:           #08080A;
+    --bg-raised:    #0E0E11;
+    --bg-elevated:  #15151A;
+    --bg-hover:     #1B1B22;
+
+    --border:       rgba(255,255,255,0.06);
+    --border-strong:rgba(255,255,255,0.10);
+
+    --text:         #F4F4F5;
+    --text-muted:   #A1A1AA;
+    --text-dim:     #52525B;
+
+    --red:          #E11D2E;
+    --red-soft:     #FF3B4D;
+    --red-glow:     rgba(225,29,46,0.35);
+    --red-tint:     rgba(225,29,46,0.08);
+
+    --green:        #22C55E;
+    --amber:        #F59E0B;
+    --violet:       #8B5CF6;
+
+    --radius-sm:    8px;
+    --radius:       12px;
+    --radius-lg:    16px;
+    --radius-xl:    20px;
+
+    --shadow-soft:  0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4);
+    --shadow-red:   0 0 0 1px rgba(225,29,46,0.4), 0 8px 32px rgba(225,29,46,0.25);
+
+    --ease:         cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.01em;
+    overflow-x: hidden;
+  }
+  .mono{ font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; font-feature-settings: "tnum"; }
+
+  /* ---------- AMBIENT BACKGROUND ---------- */
+  .ambient{
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .ambient::before, .ambient::after{
+    content:""; position:absolute; border-radius:50%; filter: blur(120px); opacity:.5;
+  }
+  .ambient::before{
+    width:600px; height:600px; background:radial-gradient(circle, rgba(225,29,46,0.35), transparent 70%);
+    top:-200px; left:-150px;
+  }
+  .ambient::after{
+    width:500px; height:500px; background:radial-gradient(circle, rgba(120,30,50,0.25), transparent 70%);
+    bottom:-200px; right:-100px;
+  }
+  .grid-overlay{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse at 50% 30%, black 30%, transparent 75%);
+  }
+
+  /* ---------- NAV ---------- */
+  nav.top{
+    position: sticky; top:0; z-index: 50;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    background: rgba(8,8,10,0.6);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner{
+    max-width: 1200px; margin: 0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 14px 24px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:600; letter-spacing:-0.02em;}
+  .brand-mark{
+    width:26px; height:26px; border-radius:7px;
+    background: linear-gradient(135deg, var(--red) 0%, #7a0d18 100%);
+    box-shadow: 0 0 0 1px rgba(225,29,46,0.5), 0 0 24px var(--red-glow);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .brand-mark svg{ width:14px; height:14px; color: white; }
+  .nav-links{ display:flex; gap:28px; font-size:14px; color: var(--text-muted); }
+  .nav-links a{ color: inherit; text-decoration:none; transition: color .2s var(--ease); }
+  .nav-links a:hover{ color: var(--text); }
+  .nav-cta{ display:flex; gap:10px; align-items:center; }
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 9px 16px; border-radius: 10px;
+    font-size: 13.5px; font-weight: 500; letter-spacing: -0.01em;
+    border: 1px solid transparent; cursor: pointer;
+    transition: all .2s var(--ease);
+    text-decoration:none; color: inherit; white-space:nowrap;
+  }
+  .btn-ghost{ color: var(--text-muted); }
+  .btn-ghost:hover{ color: var(--text); background: var(--bg-elevated); }
+  .btn-secondary{ background: var(--bg-elevated); border-color: var(--border-strong); color: var(--text); }
+  .btn-secondary:hover{ background: var(--bg-hover); border-color: rgba(255,255,255,0.18); }
+  .btn-primary{
+    background: var(--red); color: #fff;
+    box-shadow: 0 0 0 1px rgba(225,29,46,0.6), 0 6px 20px var(--red-glow);
+  }
+  .btn-primary:hover{ background: var(--red-soft); transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(225,29,46,0.7), 0 10px 28px var(--red-glow);}
+  .btn svg{ width:14px; height:14px; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: 100px 24px 60px;
+    text-align: center;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--red-tint); border: 1px solid rgba(225,29,46,0.25);
+    color: var(--red-soft); font-size: 12px; font-weight: 500;
+    margin-bottom: 28px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background: var(--red-soft); box-shadow: 0 0 8px var(--red-soft); }
+  h1.hero-title{
+    font-size: clamp(40px, 6vw, 68px);
+    font-weight: 600; letter-spacing: -0.035em;
+    line-height: 1.05;
+    background: linear-gradient(180deg, #fff 0%, #b0b0b8 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  h1.hero-title .accent{
+    background: linear-gradient(180deg, var(--red-soft) 0%, var(--red) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub{
+    margin: 24px auto 0; max-width: 620px;
+    font-size: 17px; color: var(--text-muted); line-height: 1.55;
+  }
+  .hero-cta{ margin-top: 36px; display: flex; gap: 12px; justify-content: center; }
+
+  /* ---------- APP SHELL PREVIEW ---------- */
+  .shell-wrap{
+    position: relative; z-index: 1;
+    max-width: 1180px; margin: 60px auto 0; padding: 0 24px 100px;
+  }
+  .shell-frame{
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-strong);
+    background: var(--bg-raised);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.02),
+      0 30px 80px rgba(0,0,0,0.6),
+      0 0 120px rgba(225,29,46,0.06);
+    overflow: hidden;
+  }
+  .shell-titlebar{
+    display:flex; align-items:center; gap:8px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .traffic{ display:flex; gap:6px; }
+  .traffic span{ width:11px; height:11px; border-radius:50%; background: var(--bg-hover); }
+  .titlebar-title{ margin: 0 auto; font-size: 12px; color: var(--text-dim); letter-spacing: -0.01em; }
+
+  .shell-body{
+    display:grid; grid-template-columns: 220px 1fr; min-height: 580px;
+  }
+
+  /* SIDEBAR */
+  aside.side{
+    border-right: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    padding: 18px 12px;
+    display:flex; flex-direction:column; gap: 4px;
+  }
+  .side-section{ font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; padding: 14px 10px 6px; }
+  .side-item{
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 10px; border-radius: 8px;
+    color: var(--text-muted); font-size: 13.5px; cursor: pointer;
+    transition: all .15s var(--ease);
+  }
+  .side-item:hover{ background: var(--bg-elevated); color: var(--text); }
+  .side-item.active{
+    background: var(--red-tint); color: var(--text);
+    box-shadow: inset 0 0 0 1px rgba(225,29,46,0.2);
+  }
+  .side-item.active .ico{ color: var(--red-soft); }
+  .ico{ width: 16px; height: 16px; color: var(--text-dim); flex-shrink:0; }
+  .side-item:hover .ico{ color: var(--text-muted); }
+  .side-foot{ margin-top:auto; padding: 10px; border-top: 1px solid var(--border); display:flex; align-items:center; gap:10px;}
+  .avatar{
+    width: 30px; height:30px; border-radius: 50%;
+    background: linear-gradient(135deg, #2a2a32, #15151A);
+    display:flex; align-items:center; justify-content:center; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border-strong);
+  }
+  .side-foot .who{ font-size: 12.5px; }
+  .side-foot .who small{ display:block; color: var(--text-dim); font-size: 11px; }
+
+  /* MAIN */
+  main.main{ padding: 28px 32px; overflow:hidden; }
+  .main-head{ display:flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
+  .main-head h2{ font-size: 22px; font-weight: 600; letter-spacing: -0.025em; }
+  .main-head p{ font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+  .stat-row{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .stat{
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    position: relative;
+    transition: all .2s var(--ease);
+  }
+  .stat:hover{ border-color: var(--border-strong); transform: translateY(-1px); }
+  .stat .label{ display:flex; align-items:center; gap:8px; font-size: 12px; color: var(--text-muted); }
+  .stat .label .ico{ color: var(--red-soft); }
+  .stat .value{ font-size: 26px; font-weight: 600; margin-top: 8px; letter-spacing: -0.02em; }
+  .stat .delta{ font-size: 11.5px; margin-top: 6px; color: var(--green); display:inline-flex; align-items:center; gap:4px; }
+  .stat .delta.down{ color: var(--red-soft); }
+
+  /* lower grid */
+  .grid-2{ display:grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-top: 16px; }
+  .panel{
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+  .panel h3{ font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; display:flex; align-items:center; justify-content: space-between; }
+  .panel h3 .tag{ font-size: 10.5px; color: var(--text-dim); font-weight: 500; padding: 3px 8px; border:1px solid var(--border); border-radius: 999px; }
+
+  /* mini chart */
+  .chart{ height: 130px; display:flex; align-items:flex-end; gap: 5px; padding-top: 8px; }
+  .bar{
+    flex: 1; background: linear-gradient(180deg, var(--red) 0%, rgba(225,29,46,0.2) 100%);
+    border-radius: 4px 4px 2px 2px;
+    box-shadow: 0 0 12px rgba(225,29,46,0.25);
+    transition: opacity .2s;
+  }
+  .bar.muted{ background: linear-gradient(180deg, #3a3a44 0%, #1f1f26 100%); box-shadow: none; }
+
+  .test-list{ display:flex; flex-direction: column; gap: 8px; }
+  .test-item{
+    display:flex; align-items:center; gap: 12px;
+    padding: 10px 12px; border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all .15s var(--ease); cursor:pointer;
+  }
+  .test-item:hover{ background: var(--bg-hover); border-color: var(--border); }
+  .test-meta{ flex:1; min-width: 0;}
+  .test-meta .t{ font-size: 13.5px; font-weight: 500; }
+  .test-meta .s{ font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+  .pill{
+    font-family: "SF Mono", monospace; font-size: 11.5px;
+    padding: 4px 9px; border-radius: 6px;
+    background: var(--bg-raised); border:1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .pill.good{ color: var(--green); border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.06); }
+  .pill.bad { color: var(--red-soft); border-color: rgba(225,29,46,0.2); background: var(--red-tint); }
+
+  /* FEATURE STRIP */
+  .features{
+    max-width: 1100px; margin: 100px auto 0; padding: 0 24px;
+    position: relative; z-index: 1;
+    display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .feature{
+    background: var(--bg-raised); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 22px;
+    transition: all .2s var(--ease);
+  }
+  .feature:hover{ border-color: var(--border-strong); transform: translateY(-2px); }
+  .feature .ficon{
+    width: 36px; height: 36px; border-radius: 10px;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--red-tint); border:1px solid rgba(225,29,46,0.2);
+    color: var(--red-soft); margin-bottom: 14px;
+  }
+  .feature .ficon svg{ width: 18px; height: 18px; }
+  .feature h4{ font-size: 15px; font-weight: 600; letter-spacing: -0.015em; }
+  .feature p{ font-size: 13.5px; color: var(--text-muted); line-height: 1.55; margin-top: 8px; }
+
+  footer.foot{
+    max-width: 1200px; margin: 100px auto 0; padding: 30px 24px;
+    border-top: 1px solid var(--border);
+    display:flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-dim);
+    position: relative; z-index: 1;
+  }
+
+  /* Responsive */
+  @media (max-width: 860px){
+    .nav-links{ display:none; }
+    .shell-body{ grid-template-columns: 1fr; }
+    aside.side{ display:none; }
+    .stat-row{ grid-template-columns: repeat(2,1fr); }
+    .grid-2{ grid-template-columns: 1fr; }
+    .features{ grid-template-columns: 1fr; }
+  }
+
+  /* subtle entrance */
+  @keyframes rise { from {opacity:0; transform: translateY(12px);} to {opacity:1; transform:none;} }
+  .rise{ animation: rise .7s var(--ease) both; }
+  .rise-1{ animation-delay: .05s; }
+  .rise-2{ animation-delay: .15s; }
+  .rise-3{ animation-delay: .25s; }
+  .rise-4{ animation-delay: .35s; }
+</style>
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- ============ NAV ============ -->
+  <nav class="top">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 L20 7 L20 17 L12 22 L4 17 L4 7 Z"/>
+            <path d="M12 7 L12 17 M8 12 L16 12"/>
+          </svg>
+        </div>
+        ExamForge
+      </div>
+      <div class="nav-links">
+        <a href="#">Product</a>
+        <a href="#">Engine</a>
+        <a href="#">Analytics</a>
+        <a href="#">Changelog</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="#">Sign in</a>
+        <a class="btn btn-primary" href="#">
+          Start Forging
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="eyebrow rise"><span class="dot"></span> Phase 1 · Design system locked</div>
+    <h1 class="hero-title rise rise-1">
+      The exam-performance<br/>
+      <span class="accent">operating system.</span>
+    </h1>
+    <p class="hero-sub rise rise-2">
+      Simulate real exam pressure. Analyze every mistake. Build the temperament that JEE and NEET actually demand.
+      ExamForge turns practice into precision.
+    </p>
+    <div class="hero-cta rise rise-3">
+      <a class="btn btn-primary" href="#">
+        Launch a mock test
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a class="btn btn-secondary" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></svg>
+        Watch demo
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ APP SHELL PREVIEW ============ -->
+  <section class="shell-wrap rise rise-4">
+    <div class="shell-frame">
+      <div class="shell-titlebar">
+        <div class="traffic"><span></span><span></span><span></span></div>
+        <div class="titlebar-title mono">examforge.app — Dashboard</div>
+      </div>
+
+      <div class="shell-body">
+        <!-- SIDEBAR -->
+        <aside class="side">
+          <div class="side-section">Workspace</div>
+          <div class="side-item active">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+            Dashboard
+          </div>
+          <div class="side-item">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+            My Tests
+          </div>
+          <div class="side-item">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Exam Engine
+          </div>
+          <div class="side-item">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+            Analytics
+          </div>
+          <div class="side-item">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4M5 12H3M21 12h-2M7 7L5 5M19 5l-2 2"/><circle cx="12" cy="14" r="6"/></svg>
+            Reflection
+          </div>
+          <div class="side-item">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 3v6h6"/></svg>
+            History
+          </div>
+
+          <div class="side-section">Personal</div>
+          <div class="side-item">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Focus Mode
+          </div>
+          <div class="side-item">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.15.67.4.91.69"/></svg>
+            Settings
+          </div>
+
+          <div class="side-foot">
+            <div class="avatar">A</div>
+            <div class="who">Aspirant<small>Guest session</small></div>
+          </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+          <div class="main-head">
+            <div>
+              <h2>Good evening, Aspirant.</h2>
+              <p>Your discipline is compounding. 7-day streak active.</p>
+            </div>
+            <a class="btn btn-primary" href="#">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              New Test
+            </a>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat">
+              <div class="label">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+                Accuracy
+              </div>
+              <div class="value mono">82.4<span style="color:var(--text-dim);font-size:18px">%</span></div>
+              <div class="delta">▲ 3.2% this week</div>
+            </div>
+            <div class="stat">
+              <div class="label">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Avg. speed
+              </div>
+              <div class="value mono">1:24<span style="color:var(--text-dim);font-size:18px">/q</span></div>
+              <div class="delta">▲ 11s faster</div>
+            </div>
+            <div class="stat">
+              <div class="label">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+                Streak
+              </div>
+              <div class="value mono">7<span style="color:var(--text-dim);font-size:18px"> days</span></div>
+              <div class="delta">Keep going</div>
+            </div>
+            <div class="stat">
+              <div class="label">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
+                Tests taken
+              </div>
+              <div class="value mono">24</div>
+              <div class="delta down">▼ Aim for 5 / wk</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <h3>
+                Weekly performance
+                <span class="tag">last 14 days</span>
+              </h3>
+              <div class="chart">
+                <div class="bar muted" style="height: 32%"></div>
+                <div class="bar muted" style="height: 44%"></div>
+                <div class="bar muted" style="height: 28%"></div>
+                <div class="bar muted" style="height: 60%"></div>
+                <div class="bar muted" style="height: 48%"></div>
+                <div class="bar muted" style="height: 72%"></div>
+                <div class="bar muted" style="height: 55%"></div>
+                <div class="bar" style="height: 50%"></div>
+                <div class="bar" style="height: 68%"></div>
+                <div class="bar" style="height: 58%"></div>
+                <div class="bar" style="height: 80%"></div>
+                <div class="bar" style="height: 72%"></div>
+                <div class="bar" style="height: 88%"></div>
+                <div class="bar" style="height: 82%"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>
+                Recent tests
+                <span class="tag">3 today</span>
+              </h3>
+              <div class="test-list">
+                <div class="test-item">
+                  <div class="test-meta">
+                    <div class="t">JEE Mock #07 — Mechanics</div>
+                    <div class="s">Physics · 30 questions · 60 min</div>
+                  </div>
+                  <span class="pill good">+86%</span>
+                </div>
+                <div class="test-item">
+                  <div class="test-meta">
+                    <div class="t">NEET Biology Sprint</div>
+                    <div class="s">Biology · 45 questions · 45 min</div>
+                  </div>
+                  <span class="pill good">+78%</span>
+                </div>
+                <div class="test-item">
+                  <div class="test-meta">
+                    <div class="t">Inorganic Chem — Coordination</div>
+                    <div class="s">Chemistry · 20 questions · 30 min</div>
+                  </div>
+                  <span class="pill bad">−54%</span>
+                </div>
+                <div class="test-item">
+                  <div class="test-meta">
+                    <div class="t">Calculus Drill — Integration</div>
+                    <div class="s">Maths · 25 questions · 45 min</div>
+                  </div>
+                  <span class="pill good">+72%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURE STRIP ============ -->
+  <section class="features">
+    <div class="feature">
+      <div class="ficon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+      <h4>Real exam atmosphere</h4>
+      <p>Full-screen engine with timer, palette, mark-for-review and keyboard shortcuts — built to mirror exam-day pressure.</p>
+    </div>
+    <div class="feature">
+      <div class="ficon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12h3M19 12h3M12 2v3M12 19v3"/></svg>
+      </div>
+      <h4>Deep mistake analysis</h4>
+      <p>Tag every error: silly, conceptual, time-pressure, calculation. Convert wrong answers into a structured learning loop.</p>
+    </div>
+    <div class="feature">
+      <div class="ficon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+      </div>
+      <h4>Performance analytics</h4>
+      <p>Accuracy curves, topic heatmaps, consistency tracking and improvement trends — your prep, instrumented.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>© 2026 ExamForge · Built for serious aspirants.</div>
+    <div class="mono">v0.1 · phase 1 · design system</div>
+  </footer>
+</body>
+</html>

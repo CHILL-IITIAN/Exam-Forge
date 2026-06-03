@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ExamForge — Phase 3 Dashboard Preview</title>
+<style>
+  :root{
+    --bg:#08080A; --raised:#0E0E11; --elevated:#15151A; --hover:#1B1B22;
+    --border:rgba(255,255,255,0.06); --border-strong:rgba(255,255,255,0.10);
+    --text:#F4F4F5; --muted:#A1A1AA; --dim:#52525B;
+    --red:#E11D2E; --red-soft:#FF3B4D; --red-glow:rgba(225,29,46,0.35); --red-tint:rgba(225,29,46,0.08);
+    --green:#22C55E; --amber:#F59E0B;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;min-height:100vh;}
+  .mono{font-family:"SF Mono","JetBrains Mono",Menlo,monospace;font-feature-settings:"tnum";}
+
+  .shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+  aside{border-right:1px solid var(--border);background:rgba(0,0,0,0.2);padding:14px 10px;display:flex;flex-direction:column;gap:2px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;padding:6px 10px 14px;}
+  .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--red),#7a0d18);box-shadow:0 0 0 1px rgba(225,29,46,0.5),0 0 18px var(--red-glow);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700;}
+  .section{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.08em;padding:14px 10px 6px;}
+  .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--muted);font-size:13.5px;cursor:pointer;transition:.15s var(--ease);}
+  .item:hover{background:var(--elevated);color:var(--text);}
+  .item.active{background:var(--red-tint);color:var(--text);box-shadow:inset 0 0 0 1px rgba(225,29,46,0.2);}
+  .user{margin-top:auto;border-top:1px solid var(--border);padding:10px;display:flex;align-items:center;gap:10px;}
+  .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2a2a32,#15151A);border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
+  .badge{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--red-soft);background:var(--red-tint);border:1px solid rgba(225,29,46,0.25);padding:1px 6px;border-radius:5px;margin-left:6px;}
+  .who{font-size:12.5px;}
+  .who small{display:block;color:var(--dim);font-size:11px;}
+
+  main{padding:32px;max-width:1100px;margin:0 auto;width:100%;}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap;}
+  .head h2{font-size:22px;font-weight:600;letter-spacing:-0.025em;}
+  .head p{font-size:13.5px;color:var(--muted);margin-top:4px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:10px;font-size:13.5px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:.2s var(--ease);}
+  .btn-primary{background:var(--red);color:#fff;box-shadow:0 0 0 1px rgba(225,29,46,0.6),0 6px 20px var(--red-glow);}
+  .btn-secondary{background:var(--elevated);border-color:var(--border-strong);color:var(--text);}
+  .btn-secondary:hover{background:var(--hover);}
+
+  .banner{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;background:rgba(225,29,46,0.05);border:1px solid rgba(225,29,46,0.15);border-radius:12px;margin-bottom:18px;font-size:13px;}
+  .banner a{color:var(--red-soft);font-size:12.5px;text-decoration:none;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .tile{background:var(--elevated);border:1px solid var(--border);border-radius:16px;padding:16px;transition:.2s var(--ease);}
+  .tile:hover{border-color:var(--border-strong);}
+  .tile .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);}
+  .tile .v{font-family:"SF Mono",monospace;font-size:26px;font-weight:600;margin-top:8px;letter-spacing:-0.02em;}
+  .tile .s{font-size:11.5px;color:var(--dim);margin-top:4px;}
+
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:14px;}
+  .card{background:var(--elevated);border:1px solid var(--border);border-radius:16px;padding:20px;}
+  .card h3{font-size:13.5px;font-weight:600;letter-spacing:-0.01em;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .tag{font-size:10.5px;color:var(--dim);border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-weight:500;}
+
+  .chart{height:140px;display:flex;align-items:flex-end;gap:6px;padding-top:8px;}
+  .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .bar{width:100%;border-radius:5px 5px 2px 2px;transition:.2s;}
+  .bar.now{background:linear-gradient(180deg,var(--red),rgba(225,29,46,0.2));box-shadow:0 0 12px rgba(225,29,46,0.25);}
+  .bar.past{background:linear-gradient(180deg,#3a3a44,#1f1f26);}
+  .col small{font-size:9.5px;color:var(--dim);font-family:"SF Mono",monospace;}
+
+  .weakrow{margin-bottom:12px;}
+  .weakhead{display:flex;justify-content:space-between;font-size:13px;}
+  .weakbar{margin-top:6px;height:6px;background:var(--bg);border-radius:999px;overflow:hidden;}
+  .weakbar div{height:100%;background:linear-gradient(to right,var(--red),var(--red-soft));}
+
+  .recent{margin-top:14px;}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border);}
+  .row:last-child{border-bottom:none;}
+  .row .meta{flex:1;min-width:0;}
+  .row .t{font-size:13.5px;font-weight:500;}
+  .row .s{font-size:11.5px;color:var(--dim);margin-top:2px;}
+  .pill{font-family:"SF Mono",monospace;font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--raised);color:var(--muted);}
+  .pill.good{color:#22C55E;border-color:rgba(34,197,94,.2);background:rgba(34,197,94,.06);}
+  .pill.bad{color:var(--red-soft);border-color:rgba(225,29,46,.2);background:var(--red-tint);}
+  .pill.warn{color:#F59E0B;border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.06);}
+
+  @media(max-width:900px){.shell{grid-template-columns:1fr;}aside{display:none;}.stats{grid-template-columns:repeat(2,1fr);}.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand"><div class="mark">EF</div> ExamForge</div>
+    <div class="section">Workspace</div>
+    <div class="item active">Dashboard</div>
+    <div class="item">My Tests</div>
+    <div class="item">Exam Engine</div>
+    <div class="item">Analytics</div>
+    <div class="item">Reflection</div>
+    <div class="item">History</div>
+    <div class="user">
+      <div class="avatar">A</div>
+      <div class="who" style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;">Aspirant<span class="badge">Guest</span></div>
+        <small>Local session</small>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="head">
+      <div>
+        <h2>Good evening, Aspirant.</h2>
+        <p>3-day streak active. Your discipline is compounding.</p>
+      </div>
+      <button class="btn btn-primary">+ New Test</button>
+    </div>
+
+    <div class="banner">
+      <div><span style="color:var(--red-soft);font-weight:500;">Guest session active.</span> <span style="color:var(--muted);">Create an account to keep your tests across devices.</span></div>
+      <a href="#">Promote account →</a>
+    </div>
+
+    <div class="stats">
+      <div class="tile"><div class="l">Accuracy</div><div class="v">68.2%</div><div class="s">across all attempts</div></div>
+      <div class="tile"><div class="l">Avg time / Q</div><div class="v">1:48</div><div class="s">rolling average</div></div>
+      <div class="tile"><div class="l">Streak</div><div class="v">3 days</div><div class="s">keep going</div></div>
+      <div class="tile"><div class="l">Tests taken</div><div class="v">7</div><div class="s">all-time</div></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Weekly activity <span class="tag">last 14 days</span></h3>
+        <div class="chart">
+          <!-- 14 columns, last 7 highlighted -->
+          <div class="col"><div class="bar past" style="height:18%"></div><small>13d</small></div>
+          <div class="col"><div class="bar past" style="height:38%"></div><small></small></div>
+          <div class="col"><div class="bar past" style="height:0%"></div><small></small></div>
+          <div class="col"><div class="bar past" style="height:24%"></div><small>10d</small></div>
+          <div class="col"><div class="bar past" style="height:48%"></div><small></small></div>
+          <div class="col"><div class="bar past" style="height:0%"></div><small></small></div>
+          <div class="col"><div class="bar past" style="height:32%"></div><small>7d</small></div>
+          <div class="col"><div class="bar now" style="height:55%"></div><small></small></div>
+          <div class="col"><div class="bar now" style="height:68%"></div><small></small></div>
+          <div class="col"><div class="bar now" style="height:42%"></div><small>4d</small></div>
+          <div class="col"><div class="bar now" style="height:78%"></div><small></small></div>
+          <div class="col"><div class="bar now" style="height:62%"></div><small></small></div>
+          <div class="col"><div class="bar now" style="height:88%"></div><small>1d</small></div>
+          <div class="col"><div class="bar now" style="height:74%"></div><small>today</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Weak subjects <span class="tag">fix these first</span></h3>
+        <div class="weakrow">
+          <div class="weakhead"><span>Mathematics</span><span style="color:var(--dim);font-family:'SF Mono',monospace;">42%</span></div>
+          <div class="weakbar"><div style="width:42%"></div></div>
+        </div>
+        <div class="weakrow">
+          <div class="weakhead"><span>Chemistry</span><span style="color:var(--dim);font-family:'SF Mono',monospace;">58%</span></div>
+          <div class="weakbar"><div style="width:58%"></div></div>
+        </div>
+        <div class="weakrow">
+          <div class="weakhead"><span>Physics</span><span style="color:var(--dim);font-family:'SF Mono',monospace;">66%</span></div>
+          <div class="weakbar"><div style="width:66%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card recent" style="margin-top:14px;">
+      <h3>Recent attempts <span class="tag">5 shown</span></h3>
+      <div class="row">
+        <div class="meta"><div class="t">JEE Mock — Kinematics Sprint</div><div class="s">Physics · 4 Qs · just now</div></div>
+        <span class="pill good">75%</span><span class="pill">12/16</span>
+      </div>
+      <div class="row">
+        <div class="meta"><div class="t">Inorganic Drill — Coordination Compounds</div><div class="s">Chemistry · 3 Qs · 1d ago</div></div>
+        <span class="pill warn">66%</span><span class="pill">7/12</span>
+      </div>
+      <div class="row">
+        <div class="meta"><div class="t">NEET Bio Sprint — Cell Cycle</div><div class="s">Biology · 3 Qs · 2d ago</div></div>
+        <span class="pill good">83%</span><span class="pill">10/12</span>
+      </div>
+      <div class="row">
+        <div class="meta"><div class="t">Calculus — Integration Warmup</div><div class="s">Mathematics · 3 Qs · 4d ago</div></div>
+        <span class="pill bad">42%</span><span class="pill">4/12</span>
+      </div>
+      <div class="row">
+        <div class="meta"><div class="t">JEE Mock — Kinematics Sprint</div><div class="s">Physics · 4 Qs · 5d ago</div></div>
+        <span class="pill warn">60%</span><span class="pill">9/16</span>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

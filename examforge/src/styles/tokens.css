@@ -1,0 +1,14 @@
+/* Design tokens — change here, change everywhere. */
+:root {
+  --bg:        8 8 10;
+  --bg-raised: 14 14 17;
+  --bg-elevated: 21 21 26;
+  --bg-hover:  27 27 34;
+
+  --text:      244 244 245;
+  --text-muted:161 161 170;
+  --text-dim:  82 82 91;
+
+  --red:       225 29 46;
+  --red-soft:  255 59 77;
+}

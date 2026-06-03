@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ExamForge — Phase 2 Auth Preview</title>
+<style>
+  :root{
+    --bg:#08080A; --raised:#0E0E11; --elevated:#15151A; --hover:#1B1B22;
+    --border:rgba(255,255,255,0.06); --border-strong:rgba(255,255,255,0.10);
+    --text:#F4F4F5; --muted:#A1A1AA; --dim:#52525B;
+    --red:#E11D2E; --red-soft:#FF3B4D; --red-glow:rgba(225,29,46,0.35); --red-tint:rgba(225,29,46,0.08);
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;min-height:100vh;overflow-x:hidden;}
+  .ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .ambient::before,.ambient::after{content:"";position:absolute;border-radius:50%;filter:blur(120px);opacity:.5;}
+  .ambient::before{width:600px;height:600px;background:radial-gradient(circle,rgba(225,29,46,0.30),transparent 70%);top:-200px;left:-150px;}
+  .ambient::after{width:500px;height:500px;background:radial-gradient(circle,rgba(120,30,50,0.22),transparent 70%);bottom:-200px;right:-100px;}
+
+  header.top{position:relative;z-index:1;padding:20px 24px;display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-0.02em;}
+  .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--red),#7a0d18);box-shadow:0 0 0 1px rgba(225,29,46,0.5),0 0 24px var(--red-glow);}
+
+  .stage{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:28px;max-width:980px;margin:0 auto;padding:30px 24px 80px;}
+  @media(max-width:860px){.stage{grid-template-columns:1fr;}}
+
+  .card-wrap{display:flex;flex-direction:column;align-items:center;}
+  .head{text-align:center;margin-bottom:24px;}
+  .head h1{font-size:24px;font-weight:600;letter-spacing:-0.025em;}
+  .head p{font-size:13px;color:var(--muted);margin-top:6px;}
+  .card{
+    width:100%;max-width:400px;
+    background:var(--raised);border:1px solid var(--border);
+    border-radius:16px;padding:24px;
+    box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .label{display:block;font-size:12px;color:var(--muted);}
+  .input{
+    margin-top:6px;width:100%;
+    background:var(--elevated);border:1px solid var(--border);
+    border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);
+    outline:none;transition:all .2s var(--ease);
+  }
+  .input:focus{border-color:rgba(225,29,46,0.5);box-shadow:0 0 0 3px rgba(225,29,46,0.18);}
+  .input::placeholder{color:var(--dim);}
+  .hint{display:block;margin-top:6px;font-size:11.5px;color:var(--dim);}
+  .row{display:flex;flex-direction:column;gap:14px;}
+
+  .btn{
+    width:100%;padding:10px 16px;border-radius:10px;
+    font-size:13.5px;font-weight:500;letter-spacing:-0.01em;
+    border:1px solid transparent;cursor:pointer;
+    transition:all .2s var(--ease);text-decoration:none;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-primary{background:var(--red);color:#fff;box-shadow:0 0 0 1px rgba(225,29,46,0.6),0 6px 20px var(--red-glow);}
+  .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .btn-secondary{background:var(--elevated);border-color:var(--border-strong);color:var(--text);}
+  .btn-secondary:hover{background:var(--hover);}
+
+  .divider{display:flex;align-items:center;gap:12px;margin:4px 0;}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border);}
+  .divider span{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--dim);}
+
+  .foot{margin-top:16px;text-align:center;font-size:13px;color:var(--muted);}
+  .foot a{color:var(--red-soft);text-decoration:none;}
+  .foot a:hover{text-decoration:underline;}
+
+  .label-row{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.08em;text-align:center;margin-bottom:14px;}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<header class="top"><div class="mark"></div> ExamForge</header>
+
+<div class="stage">
+  <!-- LOGIN -->
+  <div class="card-wrap">
+    <div class="label-row">/ login</div>
+    <div class="head">
+      <h1>Welcome back.</h1>
+      <p>Sign in to resume forging.</p>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div>
+          <span class="label">Email</span>
+          <input class="input" placeholder="you@aspirant.in" />
+        </div>
+        <div>
+          <span class="label">Password</span>
+          <input class="input" type="password" placeholder="••••••••" />
+        </div>
+        <button class="btn btn-primary">Sign in</button>
+        <div class="divider"><span>or</span></div>
+        <button class="btn btn-secondary">Continue as Guest</button>
+      </div>
+    </div>
+    <div class="foot">New to ExamForge? <a href="#">Create an account</a></div>
+  </div>
+
+  <!-- SIGNUP -->
+  <div class="card-wrap">
+    <div class="label-row">/ signup</div>
+    <div class="head">
+      <h1>Create your account.</h1>
+      <p>Start tracking your prep with precision.</p>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div>
+          <span class="label">Name</span>
+          <input class="input" placeholder="Your name" />
+        </div>
+        <div>
+          <span class="label">Email</span>
+          <input class="input" placeholder="you@aspirant.in" />
+        </div>
+        <div>
+          <span class="label">Password</span>
+          <input class="input" type="password" placeholder="At least 6 characters" />
+          <span class="hint">Stored only on this device for now.</span>
+        </div>
+        <button class="btn btn-primary">Create account</button>
+        <div class="divider"><span>or</span></div>
+        <button class="btn btn-secondary">Try as Guest first</button>
+      </div>
+    </div>
+    <div class="foot">Already have an account? <a href="#">Sign in</a></div>
+  </div>
+</div>
+</body>
+</html>
